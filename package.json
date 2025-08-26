@@ -1,0 +1,12 @@
+{
+  "name": "luntan",
+  "version": "1.0.0",
+  "description": "现代论坛是一个基于现代Web技术构建的在线社区平台，旨在为用户提供一个便捷、高效的交流环境。项目目标是创建一个易于使用、功能丰富的论坛系统，促进用户之间的知识共享和经验交流。",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

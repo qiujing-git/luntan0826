@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发布帖子 - 现代论坛</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind主题 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36CFC9',
+                        accent: '#722ED1',
+                        dark: '#1D2129',
+                        light: '#F2F3F5'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .btn-primary {
+                @apply bg-primary text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:bg-primary/90 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/50;
+            }
+            .btn-secondary {
+                @apply bg-white text-dark border border-gray-300 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:bg-gray-50 active:scale-95 focus:outline-none focus:ring-2 focus:ring-gray-200;
+            }
+            .input-field {
+                @apply w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300;
+            }
+            .toolbar-btn {
+                @apply p-2 rounded hover:bg-gray-100 transition-colors text-gray-600 hover:text-primary;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col">
+    <!-- 导航栏 -->
+    <header id="navbar" class="bg-white shadow-sm fixed w-full z-50 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-comments text-primary text-2xl"></i>
+                <h1 class="text-xl font-bold text-primary">现代论坛</h1>
+            </div>
+            
+            <nav class="hidden md:flex items-center space-x-6">
+                <a href="index.html" class="font-medium text-gray-600 hover:text-primary transition-colors">首页</a>
+                <a href="#" class="font-medium text-gray-600 hover:text-primary transition-colors">版块</a>
+                <a href="#" class="font-medium text-gray-600 hover:text-primary transition-colors">热门</a>
+                <a href="#" class="font-medium text-gray-600 hover:text-primary transition-colors">关于</a>
+            </nav>
+            
+            <div class="flex items-center space-x-3">
+                <div id="userMenu" class="hidden relative">
+                    <button class="flex items-center space-x-2 focus:outline-none">
+                        <img src="https://picsum.photos/id/64/40/40" alt="用户头像" class="w-8 h-8 rounded-full object-cover border-2 border-primary">
+                        <span class="font-medium" id="usernameDisplay">用户名</span>
+                        <i class="fa fa-angle-down text-gray-500"></i>
+                    </button>
+                    <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-10">
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fa fa-user-circle mr-2"></i>个人资料
+                        </a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fa fa-cog mr-2"></i>设置
+                        </a>
+                        <div class="border-t border-gray-100 my-1"></div>
+                        <a href="#" id="logoutBtn" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                            <i class="fa fa-sign-out mr-2"></i>退出登录
+                        </a>
+                    </div>
+                </div>
+                <button class="md:hidden text-gray-600 focus:outline-none">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-grow pt-16 py-8">
+        <div class="container mx-auto px-4">
+            <div class="max-w-3xl mx-auto">
+                <div class="bg-white rounded-xl shadow-sm p-6 md:p-8">
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-bold">发布新帖子</h2>
+                        <p class="text-gray-500 mt-1">分享你的想法，与社区成员交流讨论</p>
+                    </div>
+                    
+                    <form id="postForm">
+                        <div class="mb-6">
+                            <label for="postTitle" class="block text-sm font-medium text-gray-700 mb-1">标题</label>
+                            <input type="text" id="postTitle" class="input-field" placeholder="请输入帖子标题，清晰明了的标题更容易获得回应" required>
+                            <p class="text-xs text-gray-500 mt-1">标题长度建议在10-30个字之间</p>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label for="postCategory" class="block text-sm font-medium text-gray-700 mb-1">选择版块</label>
+                            <select id="postCategory" class="input-field" required>
+                                <option value="">请选择版块</option>
+                                <option value="tech">技术讨论 - 编程语言、开发工具、技术趋势等</option>
+                                <option value="career">职场交流 - 求职经验、职业发展、职场心得等</option>
+                                <option value="resources">学习资源 - 教程、书籍、课程、学习方法等</option>
+                                <option value="chat">闲聊灌水 - 生活琐事、兴趣爱好、随便聊聊等</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label for="postContent" class="block text-sm font-medium text-gray-700 mb-1">内容</label>
+                            
+                            <!-- 编辑器工具栏 -->
+                            <div class="border border-gray-300 rounded-t-lg px-3 py-2 flex flex-wrap gap-1 bg-gray-50">
+                                <button type="button" class="toolbar-btn" title="粗体">
+                                    <i class="fa fa-bold"></i>
+                                </button>
+                                <button type="button" class="toolbar-btn" title="斜体">
+                                    <i class="fa fa-italic"></i>
+                                </button>
+                                <button type="button" class="toolbar-btn" title="下划线">
+                                    <i class="fa fa-underline"></i>
+                                </button>
+                                <span class="h-5 border-r border-gray-300 mx-1"></span>
+                                <button type="button" class="toolbar-btn" title="插入链接">
+                                    <i class="fa fa-link"></i>
+                                </button>
+                                <button type="button" class="toolbar-btn" title="插入图片">
+                                    <i class="fa fa-image"></i>
+                                </button>
+                                <button type="button" class="toolbar-btn" title="插入代码">
+                                    <i class="fa fa-code"></i>
+                                </button>
+                                <span class="h-5 border-r border-gray-300 mx-1"></span>
+                                <button type="button" class="toolbar-btn" title="无序列表">
+                                    <i class="fa fa-list-ul"></i>
+                                </button>
+                                <button type="button" class="toolbar-btn" title="有序列表">
+                                    <i class="fa fa-list-ol"></i>
+                                </button>
+                                <button type="button" class="toolbar-btn" title="表情">
+                                    <i class="fa fa-smile-o"></i>
+<span class="h-5 border-r border-gray-300 mx-1"></span>
+                                <button type="button" class="toolbar-btn" title="上传附件" id="attachBtn">
+                                    <i class="fa fa-paperclip"></i>
+                                </button>
+                                <input type="file" id="attachmentInput" class="hidden" multiple>
+                                <div id="attachmentList" class="mt-2"></div>
+                                </button>
+                            </div>
+                            
+                            <!-- 内容输入区 -->
+                            <textarea id="postContent" rows="12" class="input-field rounded-t-none border-t-0 focus:ring-0" placeholder="请详细描述你的内容...分享有价值的信息更容易获得社区成员的认可和回应" required></textarea>
+                            
+                            <div class="flex justify-between mt-2 text-sm text-gray-500">
+                                <div>
+                                    <span id="charCount">0</span> 个字
+                                </div>
+                                <div>
+                                    <i class="fa fa-lightbulb-o mr-1"></i> 请遵守社区规范，文明发言
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center pt-4 border-t border-gray-100">
+                            <a href="index.html" class="text-gray-600 hover:text-primary transition-colors flex items-center">
+                                <i class="fa fa-arrow-left mr-2"></i> 返回首页
+                            </a>
+                            
+                            <div class="flex gap-3">
+                                <button type="button" id="saveDraftBtn" class="btn-secondary">
+                                    <i class="fa fa-save mr-2"></i>保存草稿
+                                </button>
+                                <button type="submit" class="btn-primary">
+                                    <i class="fa fa-paper-plane mr-2"></i>发布帖子
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="mt-6 bg-white rounded-xl shadow-sm p-6">
+                    <h3 class="font-bold mb-4">发布须知</h3>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li class="flex items-start">
+                            <i class="fa fa-info-circle text-primary mt-1 mr-2"></i>
+                            <span>请确保发布的内容符合社区规范，不包含违法、色情、暴力等不良信息</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-info-circle text-primary mt-1 mr-2"></i>
+                            <span>发布广告、推广等商业内容可能会被删除并限制账号功能</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-info-circle text-primary mt-1 mr-2"></i>
+                            <span>转载内容请注明来源，尊重原创作者的知识产权</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-info-circle text-primary mt-1 mr-2"></i>
+                            <span>管理员有权对违规内容进行删除或编辑，严重违规将封禁账号</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-10 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="fa fa-comments text-primary text-2xl"></i>
+                        <h2 class="text-xl font-bold">现代论坛</h2>
+                    </div>
+                    <p class="text-gray-400 text-sm">
+                        一个现代化的在线社区平台，连接志同道合的人，分享知识与经验。
+                    </p>
+                    <div class="flex space-x-4 mt-4">
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-github text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-weixin text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-weibo text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="font-bold text-lg mb-4">快速链接</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="index.html" class="hover:text-primary transition-colors">首页</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">版块</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">热门帖子</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">关于我们</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="font-bold text-lg mb-4">支持</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-primary transition-colors">帮助中心</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">社区规范</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">联系我们</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">反馈建议</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="font-bold text-lg mb-4">订阅更新</h3>
+                    <p class="text-gray-400 text-sm mb-4">
+                        订阅我们的通讯，获取最新的社区动态和精选内容
+                    </p>
+                    <div class="flex">
+                        <input type="email" placeholder="你的邮箱地址" class="input-field rounded-r-none focus:ring-0 focus:border-gray-300">
+                        <button class="bg-primary text-white px-4 rounded-r-lg hover:bg-primary/90 transition-colors">
+                            <i class="fa fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500 text-sm">
+                <p>© 2023 现代论坛. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 通知提示 -->
+    <div id="notification" class="fixed top-20 right-4 bg-dark text-white px-4 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 flex items-center z-50">
+        <i id="notificationIcon" class="fa fa-check-circle text-green-400 mr-2"></i>
+        <span id="notificationText">操作成功</span>
+    </div>
+
+    <script>
+        // DOM元素
+        const postForm = document.getElementById('postForm');
+        const postContent = document.getElementById('postContent');
+        const charCount = document.getElementById('charCount');
+        const saveDraftBtn = document.getElementById('saveDraftBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const notification = document.getElementById('notification');
+        const notificationIcon = document.getElementById('notificationIcon');
+        const notificationText = document.getElementById('notificationText');
+        const navbar = document.getElementById('navbar');
+        const usernameDisplay = document.getElementById('usernameDisplay');
+        const userMenu = document.getElementById('userMenu');
+
+        // 检查登录状态
+        function checkLoginStatus() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            const username = localStorage.getItem('username') || '用户';
+            
+            if (isLoggedIn) {
+                // 已登录状态
+                userMenu.classList.remove('hidden');
+                usernameDisplay.textContent = username;
+                loadDraft(); // 加载草稿
+            } else {
+                // 未登录状态，重定向到登录页
+                showNotification('请先登录', false);
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 1000);
+            }
+        }
+
+        // 显示通知
+        function showNotification(message, isSuccess = true) {
+            notificationText.textContent = message;
+            notificationIcon.className = isSuccess 
+                ? 'fa fa-check-circle text-green-400 mr-2' 
+                : 'fa fa-exclamation-circle text-red-400 mr-2';
+            
+            notification.classList.remove('translate-x-full');
+            
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+            }, 3000);
+        }
+
+        // 字符计数
+        function updateCharCount() {
+            const count = postContent.value.length;
+            charCount.textContent = count;
+            
+            // 超过限制时给出提示
+            if (count > 5000) {
+                charCount.classList.add('text-red-500');
+            } else {
+                charCount.classList.remove('text-red-500');
+            }
+        }
+
+        // 导出函数以便测试
+        window.updateCharCount = updateCharCount;
+
+        // 保存草稿
+        function saveDraft() {
+            const title = document.getElementById('postTitle').value;
+            const category = document.getElementById('postCategory').value;
+            const content = postContent.value;
+            
+            if (title || content) {
+                const draft = {
+                    title,
+                    category,
+                    content,
+                    savedAt: new Date().toISOString()
+                };
+                
+                localStorage.setItem('postDraft', JSON.stringify(draft));
+                showNotification('草稿已保存');
+            }
+        }
+
+        // 加载草稿
+        function loadDraft() {
+            const draft = localStorage.getItem('postDraft');
+            if (draft) {
+                const { title, category, content } = JSON.parse(draft);
+                document.getElementById('postTitle').value = title;
+                document.getElementById('postCategory').value = category;
+                postContent.value = content;
+                updateCharCount();
+                
+                // 显示草稿提示
+                showNotification('已加载上次保存的草稿');
+            }
+        }
+
+        // 发布帖子处理
+        postForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('postTitle').value;
+            const category = document.getElementById('postCategory').value;
+            const content = postContent.value;
+            
+            // 简单验证
+            if (!title) {
+                showNotification('请输入帖子标题', false);
+                return;
+            }
+            
+            if (!category) {
+                showNotification('请选择版块', false);
+                return;
+            }
+            
+            if (!content) {
+                showNotification('请输入帖子内容', false);
+                return;
+            }
+            
+            if (content.length > 5000) {
+                showNotification('帖子内容不能超过5000字', false);
+                return;
+            }
+            
+            // 模拟发布成功
+            showNotification('帖子发布成功！');
+            
+            // 清除草稿
+            localStorage.removeItem('postDraft');
+            
+            // 跳转到首页
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1500);
+        });
+
+        // 登出处理
+        logoutBtn.addEventListener('click', function() {
+            localStorage.setItem('isLoggedIn', 'false');
+            window.location.href = 'login.html';
+        });
+
+        // 导航栏滚动效果
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 50) {
+                navbar.classList.add('py-2', 'shadow');
+                navbar.classList.remove('py-3');
+            } else {
+                navbar.classList.add('py-3');
+                navbar.classList.remove('py-2', 'shadow');
+            }
+        });
+
+        // 编辑器工具栏按钮点击事件
+        document.querySelectorAll('.toolbar-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const action = this.querySelector('i').className;
+                
+                // 这里只是模拟编辑器功能，实际项目中需要集成富文本编辑器
+                let message = '';
+                
+                if (action.includes('bold')) message = '粗体功能已激活';
+                else if (action.includes('italic')) message = '斜体功能已激活';
+                else if (action.includes('underline')) message = '下划线功能已激活';
+                else if (action.includes('link')) message = '请输入链接地址';
+                else if (action.includes('image')) message = '请上传图片或输入图片URL';
+                else if (action.includes('code')) message = '请输入代码内容';
+                else if (action.includes('list-ul')) message = '无序列表功能已激活';
+                else if (action.includes('list-ol')) message = '有序列表功能已激活';
+// 处理附件上传
+        const attachBtn = document.getElementById('attachBtn');
+        const attachmentInput = document.getElementById('attachmentInput');
+        const attachmentList = document.getElementById('attachmentList');
+
+        /**
+         * 处理附件选择事件
+         * 当用户点击附件按钮时触发文件选择对话框
+         */
+        attachBtn.addEventListener('click', function() {
+            attachmentInput.click();
+        });
+
+        /**
+         * 处理文件选择后的预览显示
+         * 将选定的文件显示在附件列表中
+         */
+        attachmentInput.addEventListener('change', function() {
+            const files = this.files;
+            attachmentList.innerHTML = '';
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const listItem = document.createElement('div');
+                listItem.className = 'flex items-center justify-between bg-gray-50 p-2 rounded-lg mt-1';
+                listItem.innerHTML = `
+                    <span>${file.name}</span>
+                    <button type="button" class="text-red-500" onclick="removeAttachment(${i})">
+                        <i class="fa fa-trash-o"></i>
+                    </button>
+                `;
+                attachmentList.appendChild(listItem);
+            }
+        });
+
+        /**
+         * 移除指定索引的附件
+         * @param {number} index - 要移除的附件索引
+         */
+        function removeAttachment(index) {
+            const dt = new DataTransfer();
+            const files = attachmentInput.files;
+            
+            for (let i = 0; i < files.length; i++) {
+                if (i !== index) {
+                    dt.items.add(files[i]);
+                }
+            }
+            
+            attachmentInput.files = dt.files;
+            attachmentList.children[index].remove();
+        }
+
+        // 修改表单提交事件处理程序以包含附件数据
+        postForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('postTitle').value;
+            const category = document.getElementById('postCategory').value;
+            const content = postContent.value;
+            const attachments = attachmentInput.files;
+            
+            // 简单验证
+            if (!title) {
+                showNotification('请输入帖子标题', false);
+                return;
+            }
+            
+            if (!category) {
+                showNotification('请选择版块', false);
+                return;
+            }
+            
+            if (!content) {
+                showNotification('请输入帖子内容', false);
+                return;
+            }
+            
+            if (content.length > 5000) {
+                showNotification('帖子内容不能超过5000字', false);
+                return;
+            }
+            
+            // 模拟发布成功
+            showNotification('帖子发布成功！');
+            
+            // 清除草稿
+            localStorage.removeItem('postDraft');
+            
+            // 跳转到首页
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1500);
+        });
+
+        // 处理表情按钮点击
+        else if (action.includes('smile-o')) {
+            message = '请选择表情';
+        }
+        }
+            showNotification(message);
+        }
+    });
+});
+
+        // 事件监听
+        postContent.addEventListener('input', updateCharCount);
+        saveDraftBtn.addEventListener('click', saveDraft);
+
+        // 初始化
+        checkLoginStatus();
+        updateCharCount();
+    </script>
+</body>
+</html>

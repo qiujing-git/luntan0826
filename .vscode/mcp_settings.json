@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "sast-fixer-mcp": {
+      "command": "C:\\Users\\sungang\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "args": ["-m", "sast_fixer_mcp"],
+      "alwaysAllow": [
+        "convert_sast_docx_to_json",
+        "get_pending_vulnerability_json_files",
+        "generate_csv_report"
+      ],
+      "timeout": 1800,
+      "disabled": false
+    }
+  }
+}
