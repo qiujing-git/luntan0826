@@ -24,7 +24,6 @@
    ```bash
    git clone https://github.com/your-repo/modern-forum.git
    cd modern-forum
-   ```
 
 2. **打开项目**：直接在浏览器中打开index.html、login.html或post.html文件即可查看效果
 
